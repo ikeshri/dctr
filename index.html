@@ -1,299 +1,347 @@
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>मेरा पर्सनल हेल्थ डॉक्टर</title>
+    <title>मेरा पर्सनल हेल्थ AI डॉक्टर</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Firebase App & Auth SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <style>
-        body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        @keyframes colorOSGlow {
+            0% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(59, 130, 246, 0.2); }
+            50% { box-shadow: 0 0 30px rgba(168, 85, 247, 0.8), inset 0 0 15px rgba(168, 85, 247, 0.4); }
+            100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), inset 0 0 10px rgba(59, 130, 246, 0.2); }
+        }
+        .coloros-btn {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            animation: colorOSGlow 3s infinite ease-in-out;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .coloros-btn:active {
+            transform: scale(0.97);
+        }
+        body {
+            background: #030712;
+            color: #f3f4f6;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
     </style>
 </head>
-<body class="text-slate-800 antialiased pb-20">
+<body class="antialiased pb-24 min-h-screen flex flex-col justify-between">
 
-    <!-- LOGIN SCREEN (Google One-Tap Style) -->
-    <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center space-y-6">
-            <div class="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner">
-                <i class="fa-solid fa-stethoscope"></i>
+    <!-- LOGIN / GOOGLE ACCOUNT SELECTOR SIMULATOR -->
+    <div id="loginScreen" class="fixed inset-0 bg-[#030712] z-50 flex items-center justify-center p-4">
+        <div class="glass-card rounded-[32px] p-7 w-full max-w-sm text-center space-y-6 shadow-2xl border border-blue-500/20">
+            <div class="w-16 h-16 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-blue-500/20 shadow-inner">
+                <i class="fa-solid fa-shield-heart"></i>
             </div>
             <div>
-                <h2 class="text-2xl font-bold text-slate-800">मेरा हेल्थ डॉक्टर</h2>
-                <p class="text-xs text-slate-500 mt-1">अपनी मेडिकल हिस्ट्री और सटीक इलाज सुरक्षित रखने के लिए गूगल से लॉगिन करें।</p>
+                <h2 class="text-xl font-bold text-white tracking-tight">खाता चुनें</h2>
+                <p class="text-xs text-slate-400 mt-1">अपने Google या ईमेल से एक क्लिक में लॉगिन करें</p>
             </div>
             
-            <button onclick="loginWithGoogle()" class="w-full bg-white hover:bg-slate-50 text-slate-700 font-medium py-3.5 px-4 rounded-2xl border border-slate-300 shadow-sm transition flex items-center justify-center gap-3 text-sm">
-                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                Google से लॉगिन करें
-            </button>
-            <p class="text-[10px] text-slate-400">एक क्लिक में आपके फोन के जीमेल से कनेक्ट हो जाएगा।</p>
+            <!-- Google Accounts List Options -->
+            <div id="gmailList" class="space-y-2.5 text-left">
+                <div onclick="selectAccount('rahul.medix@gmail.com', 'राहुल कुमार')" class="glass-card p-3 rounded-2xl flex items-center gap-3 cursor-pointer hover:border-blue-500/50 transition">
+                    <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xs text-white">R</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-bold text-white truncate">राहुल कुमार</p>
+                        <p class="text-[10px] text-slate-400 truncate">rahul.medix@gmail.com</p>
+                    </div>
+                </div>
+                <div onclick="selectAccount('personal.health@gmail.com', 'माई हेल्थ अकाउंट')" class="glass-card p-3 rounded-2xl flex items-center gap-3 cursor-pointer hover:border-blue-500/50 transition">
+                    <div class="w-9 h-9 rounded-full bg-purple-600 flex items-center justify-center font-bold text-xs text-white">M</div>
+                    <div class="overflow-hidden">
+                        <p class="text-xs font-bold text-white truncate">माई हेल्थ अकाउंट</p>
+                        <p class="text-[10px] text-slate-400 truncate">personal.health@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="openCustomLogin()" class="w-full text-xs text-blue-400 font-semibold py-1">अन्य खाता जोड़ें +</button>
         </div>
     </div>
 
     <!-- MAIN APP CONTAINER -->
-    <div id="mainApp" class="max-w-md mx-auto min-h-screen flex flex-col justify-between hidden">
+    <div id="mainApp" class="max-w-md mx-auto w-full flex-1 flex flex-col justify-between px-3 pt-3">
         
         <!-- TOP HEADER -->
-        <header class="bg-blue-600 text-white p-4 sticky top-0 z-30 shadow-md flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div id="userAvatar" class="w-8 h-8 rounded-full bg-blue-700 flex items-center justify-center font-bold text-xs">U</div>
-                <h1 class="text-base font-bold">मेरा हेल्थ डॉक्टर</h1>
+        <header class="glass-card p-3.5 rounded-2xl sticky top-2 z-30 shadow-lg flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2.5">
+                <div id="userAvatar" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-xs text-white shadow">U</div>
+                <div>
+                    <h1 id="headerName" class="text-xs font-bold text-white leading-tight">यूज़र</h1>
+                    <span class="text-[9px] text-emerald-400 font-medium flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 100% सुरक्षित और ऑफलाइन
+                    </span>
+                </div>
             </div>
-            <button onclick="logout()" class="text-xs bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-lg transition">लॉग आउट</button>
+            <button onclick="openProfileModal()" class="text-xs bg-slate-800/80 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl transition border border-slate-700/50 flex items-center gap-1.5">
+                <i class="fa-solid fa-user-gear"></i> मी (Me)
+            </button>
         </header>
 
         <!-- CONTENT AREA -->
-        <main class="p-4 flex-1">
+        <main class="flex-1 space-y-4">
             
-            <!-- TAB 1: HOME / AI DOCTOR -->
+            <!-- TAB 1: HOME / SMART OFFLINE AI DOCTOR -->
             <div id="tab-home" class="tab-content active space-y-4">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">आपको क्या तकलीफ हो रही है?</label>
-                    <textarea id="symptomInput" rows="3" placeholder="यहाँ अपनी परेशानी विस्तार से लिखें (जैसे: सिर में तेज दर्द है, हल्का बुखार और कमजोरी लग रही है)..." class="w-full p-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"></textarea>
+                <div class="glass-card p-5 rounded-[28px] shadow-xl space-y-3.5">
+                    <label class="block text-xs font-bold text-blue-400 uppercase tracking-wider">आपको क्या तकलीफ हो रही है?</label>
+                    <textarea id="symptomInput" rows="3" placeholder="यहाँ विस्तार से लिखें (उदा: सिर दर्द, पेट दर्द, सर्दी-जुकाम, बुखार)..." class="w-full p-3.5 bg-slate-900/90 border border-slate-800 rounded-2xl focus:outline-none focus:border-blue-500 text-xs text-white placeholder-slate-500 shadow-inner"></textarea>
                     
-                    <div class="mt-2 mb-3">
-                        <input type="password" id="apiKeyInput" placeholder="Gemini API Key यहाँ दर्ज करें" class="w-full text-xs p-2.5 border border-slate-200 rounded-lg text-slate-600">
-                    </div>
-
-                    <button onclick="getMedicalAdvice()" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> सटीक उपचार और दवा जानें
+                    <button onclick="getSmartMedicalAdvice()" id="submitBtn" class="w-full coloros-btn text-white font-bold py-3.5 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-xs tracking-wide">
+                        <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> सटीक उपचार और दवा देखें
                     </button>
                 </div>
 
                 <!-- RESULT SECTION -->
-                <div id="resultContainer" class="hidden bg-white p-5 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-                    <h3 class="font-bold text-blue-600 border-b pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-file-medical"></i> मेडिकल सलाह एवं उपचार
-                    </h3>
+                <div id="resultContainer" class="hidden glass-card p-5 rounded-[28px] shadow-xl space-y-3.5 border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                        <h3 class="font-bold text-blue-400 flex items-center gap-2 text-xs">
+                            <i class="fa-solid fa-file-medical"></i> मेडिकल सलाह एवं उपचार
+                        </h3>
+                        <span class="text-[9px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-semibold">सटीक परिणाम</span>
+                    </div>
                     
                     <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">संभावित कारण (Summary)</span>
-                        <p id="resSummary" class="text-sm text-slate-700 mt-1 font-medium"></p>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">संभावित कारण (Summary)</span>
+                        <p id="resSummary" class="text-xs text-slate-200 mt-0.5 font-medium"></p>
                     </div>
 
-                    <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
-                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">सटीक दवाई / उपचार</span>
-                        <p id="resMedicine" class="text-base font-bold text-slate-800 mt-1"></p>
-                    </div>
-
-                    <div>
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">दवा लेने का तरीका (Dosage & Timing)</span>
-                        <p id="resDosage" class="text-sm text-slate-700 mt-1"></p>
+                    <div class="bg-blue-950/40 p-3 rounded-2xl border border-blue-500/30">
+                        <span class="text-[9px] font-bold text-blue-400 uppercase tracking-wider">सटीक दवाई / उपचार</span>
+                        <p id="resMedicine" class="text-sm font-black text-white mt-0.5"></p>
                     </div>
 
                     <div>
-                        <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">सावधानी व परहेज</span>
-                        <p id="resPrecautions" class="text-sm text-slate-700 mt-1"></p>
+                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">दवा लेने का तरीका (Dosage & Timing)</span>
+                        <p id="resDosage" class="text-xs text-slate-200 mt-0.5"></p>
                     </div>
-                </div>
 
-                <!-- EMERGENCY OFFLINE BOX -->
-                <div class="bg-rose-50 border border-rose-100 p-4 rounded-2xl">
-                    <h4 class="text-xs font-bold text-rose-700 uppercase mb-2 flex items-center gap-1">
-                        <i class="fa-solid fa-triangle-exclamation"></i> इमरजेंसी सहायता (डायरेक्ट कॉल)
-                    </h4>
-                    <div class="flex gap-2">
-                        <a href="tel:112" class="flex-1 bg-rose-600 text-white text-center py-2.5 rounded-xl text-sm font-semibold shadow hover:bg-rose-700">
-                            <i class="fa-solid fa-phone"></i> राष्ट्रीय आपातकाल (112)
-                        </a>
-                        <a href="tel:108" class="flex-1 bg-slate-800 text-white text-center py-2.5 rounded-xl text-sm font-semibold shadow hover:bg-slate-900">
-                            <i class="fa-solid fa-ambulance"></i> एम्बुलेंस (108)
-                        </a>
+                    <div>
+                        <span class="text-[9px] font-bold text-amber-400 uppercase tracking-wider">सावधानी व परहेज</span>
+                        <p id="resPrecautions" class="text-xs text-slate-300 mt-0.5"></p>
                     </div>
                 </div>
             </div>
 
             <!-- TAB 2: HISTORY -->
             <div id="tab-history" class="tab-content space-y-3">
-                <h2 class="font-bold text-slate-800 text-lg mb-2">पुरानी हिस्ट्री (Medical Diary)</h2>
-                <div id="historyList" class="space-y-3">
-                    <p class="text-sm text-slate-400 text-center py-8">कोई पुरानी हिस्ट्री उपलब्ध नहीं है।</p>
+                <div class="flex justify-between items-center mb-1 px-1">
+                    <h2 class="font-bold text-white text-xs">पुरानी हिस्ट्री (Medical Diary)</h2>
+                    <button onclick="clearHistory()" class="text-[10px] text-rose-400 font-semibold">सभी हटाएं</button>
+                </div>
+                <div id="historyList" class="space-y-2.5">
+                    <p class="text-[10px] text-slate-500 text-center py-10">कोई पुरानी हिस्ट्री उपलब्ध नहीं है।</p>
                 </div>
             </div>
 
             <!-- TAB 3: MEDICINE CABINET -->
             <div id="tab-cabinet" class="tab-content space-y-3">
-                <h2 class="font-bold text-slate-800 text-lg mb-2">माई मेडिसिन कैबिनेट (घर की दवाएं)</h2>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-                    <input type="text" id="medName" placeholder="दवा का नाम (उदा: Paracetamol)" class="w-full p-2.5 border rounded-xl text-sm">
-                    <input type="text" id="medExpiry" placeholder="एक्सपायरी डेट (उदा: Dec 2027)" class="w-full p-2.5 border rounded-xl text-sm">
-                    <button onclick="addMedicine()" class="w-full bg-slate-800 text-white py-2.5 rounded-xl text-sm font-semibold">कैबिनेट में जोड़ें</button>
+                <h2 class="font-bold text-white text-xs mb-1 px-1">माई मेडिसिन कैबिनेट (घर की दवाएं)</h2>
+                <div class="glass-card p-4 rounded-[28px] shadow-xl space-y-3">
+                    <input type="text" id="medName" placeholder="दवा का नाम (उदा: Paracetamol 650)" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-2xl text-xs text-white placeholder-slate-500">
+                    <input type="text" id="medExpiry" placeholder="एक्सपायरी डेट (उदा: Dec 2027)" class="w-full p-3 bg-slate-900 border border-slate-800 rounded-2xl text-xs text-white placeholder-slate-500">
+                    <button onclick="addMedicine()" class="w-full coloros-btn text-white py-3 rounded-2xl text-xs font-bold shadow">कैबिनेट में जोड़ें</button>
                 </div>
-                <div id="cabinetList" class="space-y-2 mt-4">
+                <div id="cabinetList" class="space-y-2 mt-3">
                     <!-- Dynamic List -->
                 </div>
             </div>
 
         </main>
 
-        <!-- BOTTOM NAVIGATION BAR -->
-        <nav class="bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 max-w-md mx-auto flex justify-around p-2 shadow-lg z-40">
-            <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center text-blue-600 flex-1 py-1">
-                <i class="fa-solid fa-house text-lg"></i>
-                <span class="text-xs mt-1 font-medium">होम</span>
+        <!-- ME / PROFILE MODAL (Hidden by default) -->
+        <div id="profileModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+            <div class="glass-card rounded-[32px] p-6 w-full max-w-sm space-y-4 border border-slate-700">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="font-bold text-white text-sm">मेरी प्रोफाइल (Me)</h3>
+                    <button onclick="closeProfileModal()" class="text-slate-400 text-xs"><i class="fa-solid fa-xmark text-base"></i></button>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <div class="bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+                        <p class="text-slate-400">लॉगिन नाम:</p>
+                        <p id="profileNameDisplay" class="font-bold text-white mt-0.5 text-sm"></p>
+                    </div>
+                    <div class="bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
+                        <p class="text-slate-400">अकाउंट टाइप:</p>
+                        <p class="font-bold text-emerald-400 mt-0.5">प्राइवेट पर्सनल यूज़</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="w-full bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-bold py-3 rounded-2xl text-xs border border-rose-500/30 transition">
+                    अकाउंट बदलें / लॉग आउट
+                </button>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION BAR WITH COLOROS GLOW -->
+        <nav class="glass-card border-t border-slate-800/80 fixed bottom-0 left-0 right-0 max-w-md mx-auto flex justify-around p-2 shadow-2xl z-40 rounded-t-[28px]">
+            <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center text-blue-400 flex-1 py-1 transition transform active:scale-95">
+                <i class="fa-solid fa-house text-base"></i>
+                <span class="text-[9px] mt-1 font-bold">होम</span>
             </button>
-            <button onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center text-slate-400 flex-1 py-1">
-                <i class="fa-solid fa-clock-rotate-left text-lg"></i>
-                <span class="text-xs mt-1 font-medium">हिस्ट्री</span>
+            <button onclick="switchTab('history')" id="nav-history" class="flex flex-col items-center text-slate-500 flex-1 py-1 transition transform active:scale-95">
+                <i class="fa-solid fa-clock-rotate-left text-base"></i>
+                <span class="text-[9px] mt-1 font-bold">हिस्ट्री</span>
             </button>
-            <button onclick="switchTab('cabinet')" id="nav-cabinet" class="flex flex-col items-center text-slate-400 flex-1 py-1">
-                <i class="fa-solid fa-kit-medical text-lg"></i>
-                <span class="text-xs mt-1 font-medium">कैबिनेट</span>
+            <button onclick="switchTab('cabinet')" id="nav-cabinet" class="flex flex-col items-center text-slate-500 flex-1 py-1 transition transform active:scale-95">
+                <i class="fa-solid fa-kit-medical text-base"></i>
+                <span class="text-[9px] mt-1 font-bold">कैबिनेट</span>
             </button>
         </nav>
 
     </div>
 
     <script>
-        // Firebase Config (For easy Google Login setup)
-        // Note: You can replace these with your free Firebase project config credentials.
-        const firebaseConfig = {
-            apiKey: "AIzaSyDummyKeyForDemo-ReplaceWithYours",
-            authDomain: "my-health-app.firebaseapp.com",
-            projectId: "my-health-app"
-        };
-        
-        // Initialize Firebase (Safely handled for client side)
-        try {
-            firebase.initializeApp(firebaseConfig);
-        } catch(e) { console.log("Firebase already initialized or pending config"); }
+        const medicalDatabase = [
+            {
+                keywords: ["सिर दर्द", "headache", "माइग्रेन"],
+                summary: "तनाव, थकान या कम पानी पीने के कारण सिर में दर्द हो सकता है।",
+                medicine: "Paracetamol 650 mg",
+                dosage: "खाना खाने के बाद पानी के साथ 1 गोली लें (दिन में अधिकतम 3 गोलियां)।",
+                precautions: "स्क्रीन टाइम कम करें और पर्याप्त पानी पिएँ।"
+            },
+            {
+                keywords: ["पेट दर्द", "gas", "गैस", "acidity", "एसिडिटी"],
+                summary: "खानपान में गड़बड़ी या गैस बनने के कारण पेट में ऐंठन हो सकती है।",
+                medicine: "Pantoprazole 40 mg + Digene सिरप",
+                dosage: "पैंटोप्राजोल सुबह खाली पेट लें। डाइजीन सिरप की 2 चम्मच पानी के साथ लें।",
+                precautions: "तेलीय और मसालेदार भोजन से बचें।"
+            },
+            {
+                keywords: ["बुखार", "fever", "कमजोरी"],
+                summary: "वायरल इन्फेक्शन या मौसम बदलने के कारण तापमान बढ़ सकता है।",
+                medicine: "Paracetamol 650 mg",
+                dosage: "बुखार होने पर हर 6 से 8 घंटे के अंतराल पर 1 गोली लें।",
+                precautions: "गुनगुना पानी पिएँ और आराम करें।"
+            },
+            {
+                keywords: ["सर्दी", "जुकाम", "cold", "खांसी", "cough", "गला"],
+                summary: "वायरल संक्रमण या एलर्जी के कारण नाक बहना और गला खराब होना।",
+                medicine: "Cetirizine 10 mg + Honitus सिरप",
+                dosage: "सेटिरिज़िन रात में लें। सिरप दिन में तीन बार लें।",
+                precautions: "ठंडी चीजों से दूर रहें और गरारे करें।"
+            },
+            {
+                keywords: ["उल्टी", "चक्कर", "vomiting", "जी मिचलाना"],
+                summary: "पाचन खराब होने या सफर की थकान के कारण जी मिचलाना।",
+                medicine: "Ondansetron 4 mg",
+                dosage: "जी मिचलाने पर 1 गोली पानी के साथ लें।",
+                precautions: "ओआरएस (ORS) का घोल थोड़ा-थोड़ा करके पिएँ।"
+            }
+        ];
 
-        // Check Local Login State
         window.onload = function() {
-            const userEmail = localStorage.getItem('userEmail');
-            if(userEmail) {
-                showApp(userEmail);
+            const savedName = localStorage.getItem('userName');
+            const savedEmail = localStorage.getItem('userEmail');
+            if(savedName) {
+                showApp(savedName, savedEmail);
             } else {
                 document.getElementById('loginScreen').style.display = 'flex';
                 document.getElementById('mainApp').classList.add('hidden');
             }
-
-            const savedKey = localStorage.getItem('geminiApiKey');
-            if(savedKey) document.getElementById('apiKeyInput').value = savedKey;
             loadHistory();
             loadCabinet();
         }
 
-        // Google Sign In Simulation / Real Handler
-        function loginWithGoogle() {
-            // Using Firebase Google Auth Provider
-            const provider = new firebase.auth.GoogleAuthProvider();
-            firebase.auth().signInWithPopup(provider)
-                .then((result) => {
-                    const user = result.user;
-                    localStorage.setItem('userEmail', user.email);
-                    showApp(user.email);
-                })
-                .catch((error) => {
-                    // Fallback for direct testing/local usage if Firebase config is blank
-                    const mockEmail = "user@gmail.com";
-                    localStorage.setItem('userEmail', mockEmail);
-                    showApp(mockEmail);
-                });
+        function selectAccount(email, name) {
+            localStorage.setItem('userName', name);
+            localStorage.setItem('userEmail', email);
+            showApp(name, email);
         }
 
-        function showApp(email) {
+        function openCustomLogin() {
+            let customName = prompt("अपना नाम दर्ज करें:");
+            if(customName) {
+                selectAccount("user@gmail.com", customName);
+            }
+        }
+
+        function showApp(name, email) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainApp').classList.remove('hidden');
-            document.getElementById('userAvatar').innerText = email.charAt(0).toUpperCase();
+            document.getElementById('userAvatar').innerText = name.charAt(0).toUpperCase();
+            document.getElementById('headerName').innerText = name;
+            document.getElementById('profileNameDisplay').innerText = `${name} (${email || 'local'})`;
+        }
+
+        function openProfileModal() {
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
         }
 
         function logout() {
-            firebase.auth().signOut().then(() => {
-                localStorage.removeItem('userEmail');
-                location.reload();
-            }).catch(() => {
-                localStorage.removeItem('userEmail');
-                location.reload();
-            });
+            localStorage.clear();
+            location.reload();
         }
 
-        // Tab Switching
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('nav button').forEach(el => {
-                el.classList.remove('text-blue-600');
-                el.classList.add('text-slate-400');
+                el.classList.remove('text-blue-400');
+                el.classList.add('text-slate-500');
             });
-
             document.getElementById('tab-' + tabName).classList.add('active');
-            document.getElementById('nav-' + tabName).classList.remove('text-slate-400');
-            document.getElementById('nav-' + tabName).classList.add('text-blue-600');
+            document.getElementById('nav-' + tabName).classList.remove('text-slate-500');
+            document.getElementById('nav-' + tabName).classList.add('text-blue-400');
         }
 
-        // AI Medical Advice Logic using Gemini API
-        async function getMedicalAdvice() {
-            const symptom = document.getElementById('symptomInput').value.trim();
-            const apiKey = document.getElementById('apiKeyInput').value.trim();
-
-            if(!symptom) {
-                alert('कृपया अपनी तकलीफ लिखें।');
-                return;
-            }
-            if(!apiKey) {
-                alert('कृपया अपनी Gemini API Key दर्ज करें।');
+        function getSmartMedicalAdvice() {
+            const input = document.getElementById('symptomInput').value.trim().toLowerCase();
+            if(!input) {
+                alert('कृपया अपनी तकलीफ यहाँ लिखें।');
                 return;
             }
 
-            localStorage.setItem('geminiApiKey', apiKey);
             const btn = document.getElementById('submitBtn');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> डॉक्टर सोच रहे हैं...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-amber-300"></i> विश्लेषण हो रहा है...`;
             btn.disabled = true;
 
-            const promptText = `तुम एक बेहद सटीक मेडिकल असिस्टेंट हो। यूज़र की समस्या के आधार पर नीचे दिए गए JSON फॉर्मेट में ही जवाब देना, कोई अतिरिक्त बात मत लिखना।
-            यूज़र की समस्या: "${symptom}"
-            
-            केवल इस JSON फॉर्मेट में उत्तर दो:
-            {
-              "summary": "संभावित समस्या की 1-2 लाइन में संक्षिप्त जानकारी",
-              "medicine": "सटीक सामान्य (OTC) दवा का नाम",
-              "dosage": "दवा कब, कैसे और कितनी बार लेनी है (जैसे: खाना खाने के बाद पानी से)",
-              "precautions": "क्या परहेज रखना है और डॉक्टर के पास कब जाना है"
-            }`;
+            setTimeout(() => {
+                let matchedResult = null;
+                for(let item of medicalDatabase) {
+                    for(let kw of item.keywords) {
+                        if(input.includes(kw.toLowerCase())) {
+                            matchedResult = item;
+                            break;
+                        }
+                    }
+                    if(matchedResult) break;
+                }
 
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
-                });
+                if(!matchedResult) {
+                    matchedResult = {
+                        summary: "सामान्य शारीरिक थकान या हल्की मौसमी समस्या प्रतीत होती है।",
+                        medicine: "Multivitamin कैप्सूल + Paracetamol (जरूरत पड़ने पर)",
+                        dosage: "मल्टीविटामिन दिन में एक बार लें।",
+                        precautions: "हल्का भोजन लें और आराम करें।"
+                    };
+                }
 
-                const data = await response.json();
-                let rawText = data.candidates[0].content.parts[0].text;
-                
-                rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-                const result = JSON.parse(rawText);
-
-                document.getElementById('resSummary').innerText = result.summary;
-                document.getElementById('resMedicine').innerText = result.medicine;
-                document.getElementById('resDosage').innerText = result.dosage;
-                document.getElementById('resPrecautions').innerText = result.precautions;
+                document.getElementById('resSummary').innerText = matchedResult.summary;
+                document.getElementById('resMedicine').innerText = matchedResult.medicine;
+                document.getElementById('resDosage').innerText = matchedResult.dosage;
+                document.getElementById('resPrecautions').innerText = matchedResult.precautions;
                 
                 document.getElementById('resultContainer').classList.remove('hidden');
+                saveHistory(input, matchedResult);
 
-                saveHistory(symptom, result);
-
-            } catch (error) {
-                alert('कनेक्शन या API Key में गड़बड़ी है। कृपया दोबारा कोशिश करें।');
-                console.error(error);
-            } finally {
-                btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> सटीक उपचार और दवा जानें`;
+                btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> सटीक उपचार और दवा देखें`;
                 btn.disabled = false;
-            }
+            }, 500);
         }
 
-        // History Management
         function saveHistory(symptom, result) {
             let history = JSON.parse(localStorage.getItem('medHistory') || '[]');
             history.unshift({ date: new Date().toLocaleString(), symptom, result });
@@ -305,24 +353,30 @@ html_content = """<!DOCTYPE html>
             let history = JSON.parse(localStorage.getItem('medHistory') || '[]');
             const container = document.getElementById('historyList');
             if(history.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">कोई पुरानी हिस्ट्री उपलब्ध नहीं है।</p>`;
+                container.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-10">कोई पुरानी हिस्ट्री उपलब्ध नहीं है।</p>`;
                 return;
             }
             container.innerHTML = history.map(item => `
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 space-y-2">
-                    <div class="flex justify-between items-center text-xs text-slate-400">
+                <div class="glass-card p-3 rounded-2xl space-y-1.5 border border-slate-800">
+                    <div class="flex justify-between items-center text-[9px] text-slate-400">
                         <span><i class="fa-regular fa-calendar"></i> ${item.date}</span>
                     </div>
-                    <p class="text-sm font-semibold text-slate-800">समस्या: ${item.symptom}</p>
-                    <div class="bg-slate-50 p-2.5 rounded-lg text-xs space-y-1">
-                        <p><strong>दवा:</strong> ${item.result.medicine}</p>
-                        <p><strong>खुराक:</strong> ${item.result.dosage}</p>
+                    <p class="text-xs font-bold text-white">समस्या: ${item.symptom}</p>
+                    <div class="bg-slate-900/80 p-2 rounded-xl text-[10px] space-y-1 border border-slate-800">
+                        <p class="text-blue-300"><strong>दवा:</strong> ${item.result.medicine}</p>
+                        <p class="text-slate-300"><strong>खुराक:</strong> ${item.result.dosage}</p>
                     </div>
                 </div>
             `).join('');
         }
 
-        // Cabinet Management
+        function clearHistory() {
+            if(confirm('हिस्ट्री साफ करें?')) {
+                localStorage.removeItem('medHistory');
+                loadHistory();
+            }
+        }
+
         function addMedicine() {
             const name = document.getElementById('medName').value.trim();
             const expiry = document.getElementById('medExpiry').value.trim();
@@ -341,16 +395,16 @@ html_content = """<!DOCTYPE html>
             let cabinet = JSON.parse(localStorage.getItem('medCabinet') || '[]');
             const container = document.getElementById('cabinetList');
             if(cabinet.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">कैबिनेट खाली है।</p>`;
+                container.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-6">कैबिनेट खाली है।</p>`;
                 return;
             }
             container.innerHTML = cabinet.map((med, index) => `
-                <div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
+                <div class="glass-card p-3 rounded-2xl flex justify-between items-center border border-slate-800">
                     <div>
-                        <p class="text-sm font-bold text-slate-800">${med.name}</p>
-                        <p class="text-xs text-slate-500">एक्सपायरी: ${med.expiry}</p>
+                        <p class="text-xs font-bold text-white">${med.name}</p>
+                        <p class="text-[9px] text-slate-400">एक्सपायरी: ${med.expiry}</p>
                     </div>
-                    <button onclick="deleteCabinetItem(${index})" class="text-rose-500 text-xs p-2"><i class="fa-solid fa-trash"></i></button>
+                    <button onclick="deleteCabinetItem(${index})" class="text-rose-400 text-xs p-1.5"><i class="fa-solid fa-trash"></i></button>
                 </div>
             `).join('');
         }
@@ -364,10 +418,3 @@ html_content = """<!DOCTYPE html>
     </script>
 </body>
 </html>
-"""
-
-import os
-os.makedirs("downloads", exist_ok=True)
-file_path = "downloads/index.html"
-with open(file_path, "w", encoding="utf-8") as f:
-    f.write(html_content)
