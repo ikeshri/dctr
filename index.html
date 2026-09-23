@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MagicWish - Premium Viral Wish App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        body {
+            background: radial-gradient(circle at center, #1b1b2f, #161625, #0a0a12);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+        }
+        /* Background Premium Glow Animation */
+        .glow-bg {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            filter: blur(100px);
+            border-radius: 50%;
+            z-index: -1;
+            animation: floatGlow 8s infinite alternate ease-in-out;
+        }
+        @keyframes floatGlow {
+            0% { transform: translate(-100px, -100px); opacity: 0.4; }
+            100% { transform: translate(100px, 100px); opacity: 0.7; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Top Menu (3 Lines) */
+        .menu-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            width: 25px;
+            height: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 20;
+        }
+        .menu-icon span {
+            display: block;
+            height: 3px;
+            width: 100%;
+            background: #ff758c;
+            border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #ff758c, #ffeb3b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+            text-align: left;
+        }
+        label {
+            font-size: 12px;
+            color: #bbb;
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 13px;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #ff758c;
+            box-shadow: 0 0 12px rgba(255,117,140,0.4);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(45deg, #ff758c, #ff7eb3);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255,117,140,0.4);
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255,117,140,0.7);
+        }
+
+        /* Receiver Profile View Styles */
+        .receiver-card {
+            display: none;
+            text-align: center;
+        }
+        .profile-img-container {
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 15px auto;
+            border-radius: 50%;
+            border: 3px solid #ff758c;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(255,117,140,0.6);
+            background: #222;
+        }
+        .profile-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .wish-message-box {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 15px 0;
+            color: #eee;
+            min-height: 80px;
+        }
+
+        /* Unlock Mechanism Styles */
+        .unlock-box {
+            margin: 20px 0;
+        }
+        .finger-scanner {
+            width: 80px;
+            height: 80px;
+            margin: 15px auto;
+            border: 2px dashed #ff758c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            cursor: pointer;
+            animation: pulseScanner 1.5s infinite;
+            background: rgba(255,117,140,0.08);
+        }
+        @keyframes pulseScanner {
+            0% { box-shadow: 0 0 0 0 rgba(255,117,140, 0.6); }
+            70% { box-shadow: 0 0 0 18px rgba(255,117,140, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,117,140, 0); }
+        }
+
+        .yes-no-area {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            position: relative;
+            height: 50px;
+        }
+        .yes-btn {
+            background: #28a745;
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .no-btn {
+            background: #dc3545;
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+            position: absolute;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="glow-bg"></div>
+
+    <div class="container">
+        <!-- Top 3 Line Menu -->
+        <div class="menu-icon" onclick="alert('MagicWish Menu: यहाँ आप ऐप के फीचर्स और सेटिंग्स देख सकते हैं!')">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Creator Form Panel -->
+        <div id="creatorSection">
+            <h2>✨ तगड़ा विश क्रिएटर</h2>
+            <div class="form-group">
+                <label>किसे भेजना है? (Receiver Name)</label>
+                <input type="text" id="receiverName" placeholder="जैसे: Rahul / Anjali">
+            </div>
+            <div class="form-group">
+                <label>अनलॉक करने का मोड चुनें</label>
+                <select id="unlockMode">
+                    <option value="finger">👆 फिंगरप्रिंट स्कैन (Fingerprint Scan)</option>
+                    <option value="gift">🎁 मैजिकल गिफ्ट बॉक्स (Gift Box Open)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>फोटो का डायरेक्ट लिंक (Image URL)</label>
+                <input type="text" id="imageUrl" placeholder="अपनी या दोस्त की फोटो का लिंक यहाँ डालें">
+            </div>
+            <div class="form-group">
+                <label>बैकग्राउंड म्यूजिक (YouTube Link)</label>
+                <input type="text" id="youtubeMusic" placeholder="YouTube वीडियो का लिंक (ऑप्शनल)">
+            </div>
+            <div class="form-group">
+                <label>प्यारा सा मैसेज</label>
+                <textarea id="customMessage" rows="3" placeholder="दिल की बात यहाँ लिखें..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>आपका नाम (Sender Name)</label>
+                <input type="text" id="senderName" placeholder="आपका नाम">
+            </div>
+            <button class="btn" onclick="generateViralLink()">वायरल लिंक बनाएं 🚀</button>
+        </div>
+
+        <!-- Share Panel -->
+        <div id="shareSection" class="hidden" style="text-align: center;">
+            <h2>🎉 लिंक तैयार हो गया!</h2>
+            <p style="font-size: 13px; color: #ccc; margin-bottom: 12px;">नीचे दिए गए लिंक को कॉपी करें या WhatsApp पर शेयर करें:</p>
+            <input type="text" id="generatedLinkBox" readonly style="text-align: center; margin-bottom: 12px;">
+            <button class="btn" onclick="shareOnWhatsApp()">WhatsApp पर भेजें 🟢</button>
+        </div>
+
+        <!-- Receiver Interactive Experience Panel -->
+        <div id="receiverSection" class="receiver-card">
+            <h2 id="receiverHeaderTitle">आपके लिए एक सरप्राइज है! 🎁</h2>
+            <div id="unlockContainer" class="unlock-box">
+                <p style="font-size: 13px; color: #ddd; margin-bottom: 10px;">अनलॉक करने के लिए नीचे टैप/स्कैन करें 👇</p>
+                <div class="finger-scanner" onclick="revealSurprise()">👆</div>
+            </div>
+
+            <div id="secretSurpriseContent" class="hidden">
+                <div class="profile-img-container">
+                    <img id="displayImg" src="" alt="Profile">
+                </div>
+                <h1 id="displayName" style="font-size: 22px; color: #ff758c; margin-bottom: 10px;"></h1>
+                <div class="wish-message-box" id="displayMessage"></div>
+                <h3 id="displaySender" style="font-size: 14px; color: #ffeb3b;"></h3>
+
+                <!-- Fun Yes/No Section -->
+                <div style="margin-top: 20px;">
+                    <p style="font-size: 13px; font-weight: 600; margin-bottom: 8px;">कैसा लगा यह सरप्राइज?</p>
+                    <div class="yes-no-area">
+                        <button class="yes-btn" onclick="alert('❤️ बहुत-बहुत शुक्रिया! आपका दिन शानदार रहे!')">बहुत अच्छा लगा! 😍</button>
+                        <button class="no-btn" id="noBtn" onmouseover="moveButton()" onclick="moveButton()">बिल्कुल नहीं 😜</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- YouTube Music Frame (Hidden) -->
+        <div id="audioContainer"></div>
+    </div>
+
+    <script>
+        // पेज लोड होने पर चेक करें कि क्या यह रिसीवर का लिंक है (यानी URL में डेटा है)
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const rName = urlParams.get('to');
+            const msg = urlParams.get('msg');
+            const sName = urlParams.get('from');
+            const imgUrl = urlParams.get('img');
+            const ytLink = urlParams.get('yt');
+
+            if (rName && msg && sName) {
+                // क्रिएटर और शेयर सेक्शन छिपाएं, रिसीवर कार्ड दिखाएं
+                document.getElementById('creatorSection').classList.add('hidden');
+                document.getElementById('shareSection').classList.add('hidden');
+                document.getElementById('receiverSection').style.display = 'block';
+
+                // डेटा सेट करें
+                document.getElementById('receiverHeaderTitle').innerText = `${decodeURIComponent(rName)} के लिए सरप्राइज! 🎁`;
+                document.getElementById('displayName').innerText = decodeURIComponent(rName);
+                document.getElementById('displayMessage').innerText = decodeURIComponent(msg);
+                document.getElementById('displaySender').innerText = `From: ${decodeURIComponent(sName)}`;
+
+                if (imgUrl) {
+                    document.getElementById('displayImg').src = decodeURIComponent(imgUrl);
+                } else {
+                    document.getElementById('displayImg').src = 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=300'; // Default Gift Image
+                }
+
+                // अगर YouTube लिंक है, तो बैकग्राउंड म्यूजिक चालू करें
+                if (ytLink) {
+                    let videoId = extractYouTubeId(decodeURIComponent(ytLink));
+                    if (videoId) {
+                        const audioDiv = document.getElementById('audioContainer');
+                        audioDiv.innerHTML = `<iframe width="0" height="0" src="https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1" allow="autoplay"></iframe>`;
+                    }
+                }
+            }
+        }
+
+        // लिंक जनरेट करने का फंक्शन
+        function generateViralLink() {
+            const rName = document.getElementById('receiverName').value.trim();
+            const mode = document.getElementById('unlockMode').value;
+            const imgUrl = document.getElementById('imageUrl').value.trim();
+            const ytLink = document.getElementById('youtubeMusic').value.trim();
+            const msg = document.getElementById('customMessage').value.trim();
+            const sName = document.getElementById('senderName').value.trim();
+
+            if (!rName || !msg || !sName) {
+                alert('कृपया रिसीवर का नाम, मैसेज और अपना नाम ज़रूर भरें!');
+                return;
+            }
+
+            const baseURL = window.location.origin + window.location.pathname;
+            let finalURL = `${baseURL}?to=${encodeURIComponent(rName)}&msg=${encodeURIComponent(msg)}&from=${encodeURIComponent(sName)}&mode=${encodeURIComponent(mode)}`;
+            
+            if (imgUrl) finalURL += `&img=${encodeURIComponent(imgUrl)}`;
+            if (ytLink) finalURL += `&yt=${encodeURIComponent(ytLink)}`;
+
+            document.getElementById('creatorSection').classList.add('hidden');
+            document.getElementById('shareSection').classList.remove('hidden');
+            document.getElementById('generatedLinkBox').value = finalURL;
+        }
+
+        // WhatsApp शेयरिंग
+        function shareOnWhatsApp() {
+            const link = document.getElementById('generatedLinkBox').value;
+            const text = `✨ आपके लिए एक सीक्रेट और खूबसूरत सरप्राइज आया है! अभी खोलकर देखें: ${link}`;
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        // सरप्राइज अनलॉक करने का फंक्शन
+        function revealSurprise() {
+            document.getElementById('unlockContainer').classList.add('hidden');
+            document.getElementById('receiverHeaderTitle').style.display = 'none';
+            document.getElementById('secretSurpriseContent').classList.remove('hidden');
+        }
+
+        // फनी 'ना' (No) बटन को कर्सर या टच से भगाने का फंक्शन
+        function moveButton() {
+            const x = Math.random() * 180 - 90;
+            const y = Math.random() * 80 - 40;
+            const noBtn = document.getElementById('noBtn');
+            noBtn.style.transform = `translate(${x}px, ${y}px)`;
+        }
+
+        // YouTube लिंक से वीडियो ID निकालने का छोटा सा टूल
+        function extractYouTubeId(url) {
+            let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            let match = url.match(regExp);
+            return (match && match[2].length == 11) ? match[2] : null;
+        }
+    </script>
+</body>
+</html>
