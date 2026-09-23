@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Aesthetic Wish Experience 💌</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent !important;
+      outline: none !important;
+    }
+    body {
+      background: #faf7f2;
+      color: #3b3734;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      position: relative;
+    }
+    #floating-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+    #yt-hidden { position: absolute; width: 2px; height: 2px; opacity: 0.01; pointer-events: none; }
+
+    .wish-card {
+      max-width: 420px;
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid #f0e4d7;
+      border-radius: 24px;
+      padding: 26px 22px;
+      box-shadow: 0 15px 40px rgba(215, 195, 177, 0.35);
+      z-index: 10;
+      position: relative;
+      text-align: center;
+    }
+
+    #step-envelope {
+      cursor: pointer;
+      animation: gentleFloat 3s ease-in-out infinite alternate;
+    }
+    @keyframes gentleFloat { 0% { transform: translateY(0); } 100% { transform: translateY(-8px); } }
+    .envelope-box {
+      width: 240px;
+      height: 160px;
+      background: #f4ece1;
+      border: 2px solid #e2d3c3;
+      border-radius: 16px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 25px rgba(184, 161, 142, 0.3);
+    }
+    .wax-seal {
+      width: 50px;
+      height: 50px;
+      background: #c94a53;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 20px;
+      box-shadow: 0 4px 15px rgba(201, 74, 83, 0.4);
+    }
+
+    .step-box { display: none; }
+    .step-box.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+
+    .recipient-name {
+      font-family: 'Caveat', cursive;
+      font-size: 30px;
+      color: #2b2723;
+      margin-bottom: 10px;
+    }
+    .letter-body {
+      font-family: 'Caveat', cursive;
+      font-size: 22px;
+      line-height: 1.5;
+      color: #4a433e;
+      background: #fdfaf7;
+      border: 1px dashed #eedecf;
+      padding: 16px;
+      border-radius: 16px;
+      margin: 14px 0;
+      min-height: 100px;
+      text-align: left;
+      white-space: pre-wrap;
+    }
+
+    .interactive-box {
+      font-size: 55px;
+      margin: 18px 0;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-main {
+      background: #ff85a2;
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+      box-shadow: 0 6px 20px rgba(255, 133, 162, 0.4);
+      margin-top: 15px;
+    }
+    .btn-secondary {
+      background: #eee4dc;
+      color: #7d7269;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .vinyl-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #fdf7f4;
+      border: 1px solid #fae6de;
+      border-radius: 50px;
+      padding: 6px 14px;
+      margin: 14px 0;
+    }
+    .vinyl-disc {
+      width: 36px;
+      height: 36px;
+      background: #242220;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: spin 3.5s linear infinite;
+    }
+    .vinyl-center { width: 12px; height: 12px; background: #ff85a2; border-radius: 50%; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .cute-arena {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 15px;
+      position: relative;
+      height: 50px;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="floating-canvas"></canvas>
+  <div id="yt-hidden"></div>
+
+  <div class="wish-card">
+    
+    <!-- STEP 1: Envelope Opening -->
+    <div id="step-envelope" onclick="startExperience()">
+      <div class="envelope-box">
+        <div class="wax-seal"><i class="fa-solid fa-heart"></i></div>
+      </div>
+      <h2 style="font-size: 18px; color:#2d2a26;" id="envelope-title">A Special Surprise For You</h2>
+      <p style="font-size: 12px; color:#8c827a; margin-top: 4px;">💌 Tap the seal to open</p>
+    </div>
+
+    <!-- STEP 2: Category-Based Interactive Step -->
+    <div id="step-interactive" class="step-box">
+      <h3 style="font-size: 16px; color:#b5838d;" id="interactive-heading">Interactive Step</h3>
+      <div class="interactive-box" id="interactive-icon" onclick="triggerInteractiveAction()">🎁</div>
+      <p id="interactive-text" style="font-size: 13px; color:#8c827a;">Tap to unlock the magic!</p>
+      <button class="btn-main" id="interactive-next-btn" style="display:none;" onclick="nextStep(3)">Continue to Letter ✨</button>
+    </div>
+
+    <!-- STEP 3: Music & Typewriter Letter -->
+    <div id="step-letter-stage" class="step-box">
+      <div class="recipient-name" id="view-name">Dearest,</div>
+      
+      <div class="vinyl-bar" id="vinyl-wrap" style="display:none;">
+        <div class="vinyl-disc"><div class="vinyl-center"></div></div>
+        <div style="font-size:11.5px; font-weight:700; color:#5c544d;">Playing Vibe Song 🎶</div>
+      </div>
+
+      <div class="letter-body" id="typewriter-text"></div>
+      <button class="btn-main" id="letter-next-btn" style="display:none;" onclick="nextStep(4)">Next 💖</button>
+    </div>
+
+    <!-- STEP 4: Fun Question -->
+    <div id="step-question" class="step-box">
+      <h3 style="font-size: 16px; margin-bottom: 10px;">Quick Question 🥺</h3>
+      <p style="font-size: 13px; color:#6b6057; margin-bottom: 15px;" id="question-label">Did this make your day better?</p>
+      <div class="cute-arena" id="arena">
+        <button class="btn-main" id="btn-yes" style="width: auto; margin:0;" onclick="finalYes()">Yes, absolutely! 🥰</button>
+        <button class="btn-secondary" id="btn-no" onmouseover="dodgeNo()" onclick="dodgeNo()">No 🙈</button>
+      </div>
+    </div>
+
+    <!-- STEP 5: Final Instagram Reply -->
+    <div id="step-final" class="step-box">
+      <div style="font-size: 40px; margin-bottom: 10px;">✨</div>
+      <h3 style="font-size: 18px; color:#ff85a2; margin-bottom: 8px;">So glad you loved it!</h3>
+      <p style="font-size: 13px; color:#8c827a; margin-bottom: 20px;">Send your sweet reply back to the creator.</p>
+      <a href="#" target="_blank" class="btn-main" id="insta-send-btn" style="text-decoration:none; display:block;">
+        <i class="fa-brands fa-instagram"></i> Reply on Instagram 📸
+      </a>
+    </div>
+
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBlYdZlJsnNcZv1ky107-spvhIH7235UTk",
+      databaseURL: "https://cyberwish-521fd-default-rtdb.firebaseio.com",
+      projectId: "cyberwish-521fd",
+      appId: "1:158188886863:web:c04bac173f7a141732933a"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let letterData = null;
+    let noDodges = 0;
+    let yesScale = 1.0;
+
+    const params = new URLSearchParams(window.location.search);
+    const letterId = params.get('id');
+
+    if(letterId) {
+      db.ref('cute_letters/' + letterId).once('value').then(snap => {
+        if(snap.exists()) {
+          letterData = snap.val();
+          document.getElementById('view-name').innerText = (letterData.name || 'Dearest') + ',';
+          if(letterData.replyInsta) {
+            document.getElementById('insta-send-btn').href = 'https://instagram.com/' + letterData.replyInsta;
+          }
+          setupCategoryUI(letterData.moodTitle);
+          initStickers(letterData.stickers || 'teddy');
+        }
+      });
+    }
+
+    function setupCategoryUI(mood) {
+      const heading = document.getElementById('interactive-heading');
+      const icon = document.getElementById('interactive-icon');
+      const text = document.getElementById('interactive-text');
+
+      if(mood && mood.includes('Birthday')) {
+        heading.innerText = "Step 1: Cut the Birthday Cake 🎂";
+        icon.innerText = "🎂";
+        text.innerText = "Tap the cake to cut & blow candles!";
+      } else if(mood && mood.includes('Apology')) {
+        heading.innerText = "Step 1: Open the Healing Heart 🩹";
+        icon.innerText = "❤️‍🩹";
+        text.innerText = "Tap to mend things and accept the apology!";
+      } else if(mood && mood.includes('Friendship')) {
+        heading.innerText = "Step 1: Open Bestie Gift Box 🎁";
+        icon.innerText = "🎁";
+        text.innerText = "Tap to unwrap your friendship treat!";
+      } else {
+        heading.innerText = "Step 1: Unlock Love Lock 🧸";
+        icon.innerText = "🧸";
+        text.innerText = "Tap the teddy to open your surprise!";
+      }
+    }
+
+    function startExperience() {
+      document.getElementById('step-envelope').style.display = 'none';
+      document.getElementById('step-interactive').classList.add('active');
+    }
+
+    function triggerInteractiveAction() {
+      const icon = document.getElementById('interactive-icon');
+      const text = document.getElementById('interactive-text');
+      icon.style.transform = "scale(1.2)";
+      
+      if(letterData && letterData.moodTitle && letterData.moodTitle.includes('Birthday')) {
+        icon.innerText = "🍰✨";
+        text.innerText = "Cake cut successfully! Candles blown 🕯️💨";
+      } else {
+        icon.innerText = "💖✨";
+        text.innerText = "Successfully unlocked! Ready for the letter.";
+      }
+      
+      document.getElementById('interactive-next-btn').style.display = 'block';
+      confetti({ particleCount: 60, spread: 50 });
+    }
+
+    function nextStep(stepNum) {
+      document.querySelectorAll('.step-box').forEach(b => b.classList.remove('active'));
+
+      if(stepNum === 3) {
+        document.getElementById('step-letter-stage').classList.add('active');
+        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+        if(letterData && letterData.ytId) {
+          document.getElementById('vinyl-wrap').style.display = 'flex';
+          playHiddenYT(letterData.ytId);
+        }
+        startTypewriter(letterData ? letterData.message : "You are truly special. ✨");
+      } else if(stepNum === 4) {
+        document.getElementById('step-question').classList.add('active');
+      } else if(stepNum === 5) {
+        document.getElementById('step-final').classList.add('active');
+        confetti({ particleCount: 140, spread: 90, origin: { y: 0.6 } });
+      }
+    }
+
+    function startTypewriter(fullText) {
+      const box = document.getElementById('typewriter-text');
+      let idx = 0;
+      box.innerText = "";
+      const timer = setInterval(() => {
+        if(idx < fullText.length) {
+          box.innerText += fullText.charAt(idx);
+          idx++;
+        } else {
+          clearInterval(timer);
+          document.getElementById('letter-next-btn').style.display = 'block';
+        }
+      }, 35);
+    }
+
+    function playHiddenYT(vid) {
+      const origin = window.location.origin;
+      const url = `https://www.youtube.com/embed/${vid}?enablejsapi=1&autoplay=1&loop=1&playlist=${vid}&controls=0&origin=${encodeURIComponent(origin)}`;
+      document.getElementById('yt-hidden').innerHTML = `<iframe width="200" height="200" src="${url}" frameborder="0" allow="autoplay"></iframe>`;
+    }
+
+    function dodgeNo() {
+      const btn = document.getElementById('btn-no');
+      const yes = document.getElementById('btn-yes');
+      noDodges++;
+      yesScale += 0.15;
+      yes.style.transform = `scale(${yesScale})`;
+
+      const x = (Math.random() - 0.5) * 140;
+      const y = (Math.random() - 0.5) * 50;
+      btn.style.position = 'relative';
+      btn.style.transform = `translate(${x}px, ${y}px)`;
+
+      const texts = ["Think again! 🌸", "Can't click! 🥺", "Say Yes! 🧸", "Nope! 🎀"];
+      btn.innerText = texts[noDodges % texts.length];
+    }
+
+    function finalYes() {
+      nextStep(5);
+    }
+
+    const canvas = document.getElementById('floating-canvas');
+    const ctx = canvas.getContext('2d');
+    let items = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function initStickers(type) {
+      let icons = ['🧸', '🌸', '💌', '✨'];
+      if(type === 'strawberry') icons = ['🍓', '🎀', '🍰', '✨'];
+      if(type === 'butterflies') icons = ['🦋', '🌸', '🌿', '✨'];
+      
+      for(let i=0; i<20; i++) {
+        items.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 10 + 16,
+          speedY: Math.random() * 0.6 + 0.2,
+          char: icons[i % icons.length]
+        });
+      }
+      renderStickers();
+    }
+
+    function renderStickers() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      items.forEach(p => {
+        p.y -= p.speedY;
+        if(p.y < -30) { p.y = canvas.height + 30; p.x = Math.random() * canvas.width; }
+        ctx.font = `${p.size}px Arial`;
+        ctx.fillText(p.char, p.x, p.y);
+      });
+      requestAnimationFrame(renderStickers);
+    }
+  </script>
+</body>
+</html>
